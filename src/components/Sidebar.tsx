@@ -4,9 +4,9 @@ import type { SystemInfo } from "../lib/api";
 export type Screen = "create" | "jobs" | "library" | "settings";
 
 const NAV: { id: Screen; label: string; icon: typeof Sparkles }[] = [
-  { id: "create", label: "Create", icon: Sparkles },
-  { id: "jobs", label: "Jobs", icon: Layers },
-  { id: "library", label: "Library", icon: Film },
+  { id: "create", label: "Oluştur", icon: Sparkles },
+  { id: "jobs", label: "İşlemler", icon: Layers },
+  { id: "library", label: "Kütüphane", icon: Film },
 ];
 
 export function Sidebar({
@@ -26,7 +26,7 @@ export function Sidebar({
         <div className="grid size-8 place-items-center rounded-small bg-accent text-ink">
           <Sparkles size={18} strokeWidth={2.5} />
         </div>
-        <span className="font-display text-[24px] font-extrabold uppercase tracking-tight">Kawarimi</span>
+        <span className="font-display text-[24px] font-extrabold uppercase tracking-tight">Merogi AI</span>
       </div>
       <nav className="flex flex-col gap-1">
         {NAV.map((item) => (
@@ -37,19 +37,19 @@ export function Sidebar({
         <div className="rounded-field border border-stroke bg-card px-4 py-3">
           <div className="flex items-center gap-2 text-body font-semibold">
             <span className={`size-1.5 rounded-full ${problem?.blocks ? "bg-danger" : problem ? "bg-warning" : "bg-accent"}`} />
-            {gpu ? gpu.name.replace(/^NVIDIA (GeForce )?/, "") : "No NVIDIA GPU found"}
+            {gpu ? gpu.name.replace(/^NVIDIA (GeForce )?/, "") : "NVIDIA GPU bulunamadı"}
           </div>
           <div className="mt-1 text-note text-muted">
             {problem?.kind === "oldDriver"
-              ? `Driver ${problem.driver} is too old`
+              ? `Sürücü ${problem.driver} eski`
               : problem?.kind === "lowVram"
-                ? `${Math.round(problem.memoryMb / 1024)} GB · may run out of memory`
+                ? `${Math.round(problem.memoryMb / 1024)} GB · bellek yetersiz kalabilir`
                 : gpu
-                  ? `${Math.round(gpu.memoryMb / 1024)} GB · everything runs here`
-                  : "Prep and render need CUDA"}
+                  ? `${Math.round(gpu.memoryMb / 1024)} GB · GPU kullanıma hazır`
+                  : "Hazırlık ve render için CUDA gerekli"}
           </div>
         </div>
-        <NavRow id="settings" label="Settings" icon={Settings} active={screen === "settings"} onClick={() => onSelect("settings")} />
+        <NavRow id="settings" label="Ayarlar" icon={Settings} active={screen === "settings"} onClick={() => onSelect("settings")} />
       </div>
     </aside>
   );
