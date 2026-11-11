@@ -5,7 +5,7 @@ import { Button } from "../../components/ui";
 import { MAX_SECONDS, TrimStrip, type Range } from "./TrimStrip";
 import { Note, StageAndSide, Step, fileUrl } from "./Step";
 
-/** The new clip: a drop target until there is a video, then the video with its trim and the steps ahead, dimmed. */
+/** Yeni video: dosya seçme alanından kırpma ve hazırlık adımlarına uzanan akış. */
 export function NewClip({
   source,
   reading,
@@ -25,15 +25,15 @@ export function NewClip({
     return (
       <div className="flex h-full flex-col items-center justify-center gap-4 rounded-card border border-dashed border-glass-stroke bg-well p-10 text-center">
         <Clapperboard size={36} className="text-faint" />
-        <div className="text-row font-semibold">{reading ? "Reading the video…" : "Drop a video to start"}</div>
+        <div className="text-row font-semibold">{reading ? "Video okunuyor…" : "Başlamak için bir video bırak"}</div>
         <p className="max-w-sm text-note text-muted">
-          Any video FFmpeg reads. Kawarimi finds the people, follows the one you pick through every cut and renders your
-          character in their place. Nothing leaves this computer.
+          FFmpeg'in okuyabildiği video biçimleri desteklenir. Merogi AI videodaki kişileri bulur, seçtiğin kişiyi
+          sahneler boyunca takip eder ve yerine referans karakterini yerleştirir. Dosyaların bilgisayarından çıkmaz.
         </p>
         {error && <Note tone="bad">{error}</Note>}
         <Button variant="primary" onClick={onChoose} disabled={reading}>
           <span className="flex items-center gap-2">
-            <Film size={16} /> Choose Video…
+            <Film size={16} /> Video Seç…
           </span>
         </Button>
       </div>
@@ -66,7 +66,6 @@ function Trim({
     clipApi.strip(source.path, source.duration).then(setStrip, () => setStrip(null));
   }, [source]);
 
-  // A codec the WebView cannot play gets a converted copy for the preview; prep still reads the original.
   const unplayable = () => {
     if (converting) return;
     setConverting(true);
@@ -80,7 +79,6 @@ function Trim({
     if (video.current) video.current.currentTime = t;
   };
 
-  // Playing stays inside the range.
   const keepInRange = () => {
     const v = video.current;
     if (v && !v.paused && (v.currentTime >= range.end || v.currentTime < range.start - 0.1)) {
@@ -101,26 +99,26 @@ function Trim({
     }
   };
 
-  const seconds = `${(range.end - range.start).toFixed(1)} s`;
+  const seconds = `${(range.end - range.start).toFixed(1)} sn`;
   return (
     <div className="flex h-full flex-col gap-5 rounded-card border border-stroke bg-card p-6">
       <header className="flex items-end gap-2">
         <div className="min-w-0">
           <h2 className="truncate font-display text-[30px] leading-none font-extrabold uppercase">{name}</h2>
           <p className="mt-1 text-muted">
-            New clip · {timecode(source.duration)} · {source.width}×{source.height}
-            {source.hasAudio ? "" : " · no sound"}
+            Yeni video · {timecode(source.duration)} · {source.width}×{source.height}
+            {source.hasAudio ? "" : " · ses yok"}
           </p>
         </div>
         <span className="ml-auto flex gap-2">
-          <Button onClick={onChoose} title="Choose another video for this new clip">
+          <Button onClick={onChoose} title="Başka bir video seç">
             <span className="flex items-center gap-2">
-              <Film size={14} /> Replace Video…
+              <Film size={14} /> Videoyu Değiştir…
             </span>
           </Button>
-          <Button onClick={onClear} title="Drop this video">
+          <Button onClick={onClear} title="Bu videoyu kaldır">
             <span className="flex items-center gap-2">
-              <X size={14} /> Clear
+              <X size={14} /> Temizle
             </span>
           </Button>
         </span>
@@ -138,7 +136,7 @@ function Trim({
               className="aspect-video w-full rounded-media bg-black object-contain"
             />
             {converting && url === fileUrl(source.path) && (
-              <Note tone="faint">Converting a preview this view can play…</Note>
+              <Note tone="faint">Önizleme dönüştürülüyor…</Note>
             )}
             <TrimStrip duration={source.duration} strip={strip} range={range} onChange={setRange} onScrub={scrub} />
           </div>
@@ -146,33 +144,33 @@ function Trim({
         side={
           <div className="flex flex-col gap-6">
             <Step number={1} title="Video" detail={seconds} state="done">
-              <Note>Trim under the player to the part with the person, 4–30 s.</Note>
+              <Note>Oynatıcının altından değiştirmek istediğin bölümü 4–30 saniye olacak şekilde kırp.</Note>
             </Step>
-            <Step number={2} title="Prep" detail="On this GPU">
+            <Step number={2} title="Hazırlık" detail="Bu GPU üzerinde">
               <Note>
-                Finds the cuts and the people, follows them through every shot and writes their masks. A few seconds
-                to a minute; nothing is sent anywhere.
+                Sahne kesitlerini ve kişileri bulur, kişileri sahneler boyunca takip eder ve maskelerini oluşturur.
+                İşlem birkaç saniye ile bir dakika sürebilir; dosyaların hiçbir yere gönderilmez.
               </Note>
             </Step>
-            <Step number={3} title="Characters" state="later">
-              <Note tone="faint">One image per person you replace; you see who is who once prep is done.</Note>
+            <Step number={3} title="Karakterler" state="later">
+              <Note tone="faint">Değiştirmek istediğin her kişi için bir referans fotoğrafı ekle.</Note>
             </Step>
-            <Step number={4} title="Prompt" detail="Optional" state="later">
-              <Note tone="faint">Written for you from the clip and the character; edit it if you like.</Note>
+            <Step number={4} title="Komut" detail="İsteğe bağlı" state="later">
+              <Note tone="faint">Video ve karaktere göre otomatik hazırlanır; istersen düzenleyebilirsin.</Note>
             </Step>
-            <Step number={5} title="Render" state="later">
-              <Note tone="faint">A quick draft of the first seconds to check, then the whole clip, on your GPU.</Note>
+            <Step number={5} title="Oluştur" state="later">
+              <Note tone="faint">Önce kontrol için kısa bir taslak, ardından videonun tamamı GPU üzerinde işlenir.</Note>
             </Step>
           </div>
         }
       />
       <footer className="flex items-center gap-3 border-t border-stroke pt-4">
         <span className={`text-note ${failure ? "text-danger" : "text-muted"}`}>
-          {failure ?? `${timecode(range.start)}–${timecode(range.end)} · ${seconds}; characters and the render come next.`}
+          {failure ?? `${timecode(range.start)}–${timecode(range.end)} · ${seconds}; sırada karakter seçimi ve video oluşturma var.`}
         </span>
         <Button variant="primary" className="ml-auto" onClick={prepare} disabled={busy}>
           <span className="flex items-center gap-2">
-            <Scissors size={16} /> Prepare Clip
+            <Scissors size={16} /> Videoyu Hazırla
           </span>
         </Button>
       </footer>
