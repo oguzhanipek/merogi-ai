@@ -7,9 +7,9 @@ import { Button, Card, EmptyState, PageHeader, SectionLabel } from "../component
 
 type Filter = "all" | "draft" | "final";
 const FILTERS: [Filter, string][] = [
-  ["all", "All"],
-  ["draft", "Drafts"],
-  ["final", "Finals"],
+  ["all", "Tümü"],
+  ["draft", "Taslaklar"],
+  ["final", "Son çıktılar"],
 ];
 
 function result(job: Job): string {
@@ -52,7 +52,7 @@ export function Library({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-start justify-between gap-4">
-        <PageHeader title="Library" subtitle="Every draft and final you've rendered, with the clip and character it came from." />
+        <PageHeader title="Kütüphane" subtitle="Oluşturduğun taslak ve son videoları, kaynak klipleri ve karakterleriyle birlikte burada bulabilirsin." />
         <div className="flex shrink-0 rounded-full border border-stroke bg-well p-1">
           {FILTERS.map(([id, label]) => (
             <button
@@ -71,9 +71,9 @@ export function Library({ onCreate }: { onCreate: () => void }) {
         <div className="min-h-0 flex-1">
           <EmptyState
             icon={<Film size={36} />}
-            title={all.length ? "Nothing here" : "No results yet"}
-            note={all.length ? `No ${filter === "draft" ? "drafts" : "finals"} yet.` : "Drafts and finals you render in Create show up here."}
-            action={all.length ? { label: "Show All", onClick: () => setFilter("all") } : { label: "Go to Create", onClick: onCreate }}
+            title={all.length ? "Burada henüz içerik yok" : "Henüz sonuç yok"}
+            note={all.length ? `No ${filter === "draft" ? "taslak" : "son çıktı"} yet.` : "Drafts and finals you render in Create show up here."}
+            action={all.length ? { label: "Tümünü göster", onClick: () => setFilter("all") } : { label: "Oluştur bölümüne git", onClick: onCreate }}
           />
         </div>
       ) : (
@@ -93,7 +93,7 @@ function Tile({ job, onOpen }: { job: Job; onOpen: () => void }) {
   return (
     <button
       onClick={onOpen}
-      aria-label={`${jobName(job)}, ${final ? "final" : "draft"}`}
+      aria-label={`${jobName(job)}, ${final ? "son çıktı" : "taslak"}`}
       className="group relative aspect-video overflow-hidden rounded-field border border-stroke bg-well text-left hover:border-glass-stroke"
     >
       <video
@@ -113,7 +113,7 @@ function Tile({ job, onOpen }: { job: Job; onOpen: () => void }) {
           final ? "bg-accent text-ink" : "bg-black/60 text-text"
         }`}
       >
-        {final ? "Final" : "Draft"}
+        {final ? "Son çıktı" : "Taslak"}
       </span>
     </button>
   );
@@ -134,28 +134,28 @@ function Detail({ job, onBack, onRemoved }: { job: Job; onBack: () => void; onRe
       <div className="pb-4">
         <Button variant="link" onClick={onBack}>
           <span className="inline-flex items-center gap-1.5">
-            <ArrowLeft size={14} /> Library
+            <ArrowLeft size={14} /> Kütüphane
           </span>
         </Button>
       </div>
-      <PageHeader title={jobName(job)} subtitle={`${final ? "Final" : "Draft"} · rendered ${stamp(job.created)} · seed ${job.spec.settings.seed}`} />
+      <PageHeader title={jobName(job)} subtitle={`${final ? "Son çıktı" : "Taslak"} · rendered ${stamp(job.created)} · seed ${job.spec.settings.seed}`} />
       <div className="flex max-w-[1100px] flex-col gap-5">
         <video src={convertFileSrc(result(job))} controls className="max-h-[52vh] w-full rounded-card bg-black" />
         <div className="flex flex-wrap items-center gap-2">
           <Button variant="primary" onClick={() => run(() => jobsApi.open(job.id))}>
             <span className="inline-flex items-center gap-1.5">
-              <ExternalLink size={14} /> Open
+              <ExternalLink size={14} /> Aç
             </span>
           </Button>
           <Button onClick={() => run(() => jobsApi.reveal(job.id))}>
             <span className="inline-flex items-center gap-1.5">
-              <FolderOpen size={14} /> Show in folder
+              <FolderOpen size={14} /> Klasörde göster
             </span>
           </Button>
           <div className="ml-auto flex items-center gap-2">
             {confirming ? (
               <>
-                <span className="text-note text-muted">The video and its job folder go to the Recycle Bin.</span>
+                <span className="text-note text-muted">Video ve işlem klasörü Geri Dönüşüm Kutusu'na taşınacak.</span>
                 <Button className="text-danger" onClick={() => run(() => jobsApi.remove(job.id), onRemoved)}>
                   Move to Recycle Bin
                 </Button>
@@ -166,7 +166,7 @@ function Detail({ job, onBack, onRemoved }: { job: Job; onBack: () => void; onRe
             ) : (
               <Button onClick={() => setConfirming(true)}>
                 <span className="inline-flex items-center gap-1.5">
-                  <Trash2 size={14} /> Delete
+                  <Trash2 size={14} /> Sil
                 </span>
               </Button>
             )}
@@ -175,21 +175,21 @@ function Detail({ job, onBack, onRemoved }: { job: Job; onBack: () => void; onRe
         {error && <div className="text-note text-danger">{error}</div>}
         <div className="grid grid-cols-[2fr_1fr] gap-4">
           <div>
-            <SectionLabel>Source</SectionLabel>
+            <SectionLabel>Kaynak video</SectionLabel>
             <Card className="overflow-hidden">
               <video src={convertFileSrc(sourceVideo(job))} controls muted preload="metadata" className="aspect-video w-full bg-black object-contain" />
             </Card>
           </div>
           <div>
-            <SectionLabel>Character</SectionLabel>
+            <SectionLabel>Karakter</SectionLabel>
             <Card className="grid aspect-square place-items-center overflow-hidden p-2">
-              <img src={convertFileSrc(job.spec.character)} alt="Character" className="max-h-full max-w-full rounded-field object-contain" />
+              <img src={convertFileSrc(job.spec.character)} alt="Karakter" className="max-h-full max-w-full rounded-field object-contain" />
             </Card>
           </div>
         </div>
         {job.spec.settings.prompt && (
           <div>
-            <SectionLabel>Prompt</SectionLabel>
+            <SectionLabel>Komut</SectionLabel>
             <Card className="p-4 text-body text-muted select-text">{job.spec.settings.prompt}</Card>
           </div>
         )}
