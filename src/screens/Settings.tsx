@@ -9,30 +9,30 @@ import { StorageSettings } from "./settings/StorageSettings";
 import { Acknowledgements } from "./settings/Acknowledgements";
 
 const GROUP_LABEL: Record<AssetInfo["group"], string> = {
-  tool: "Tool",
-  tracking: "Tracking",
-  people: "People",
-  faces: "Faces",
-  shots: "Shot cuts",
-  cutout: "Cutout",
-  render: "Render",
-  llm: "Prompt writer",
+  tool: "Araç",
+  tracking: "Takip",
+  people: "Kişi algılama",
+  faces: "Yüz algılama",
+  shots: "Sahne kesitleri",
+  cutout: "Arka plan ayırma",
+  render: "Video oluşturma",
+  llm: "Komut asistanı",
 };
 
 type Tab = "general" | "comfy" | "llm" | "storage";
 const TABS: [Tab, string][] = [
-  ["general", "GPU and models"],
+  ["general", "GPU ve Modeller"],
   ["comfy", "ComfyUI"],
-  ["llm", "LLM"],
-  ["storage", "Storage"],
+  ["llm", "Yapay Zekâ Asistanı"],
+  ["storage", "Depolama"],
 ];
 
-/** Settings, as in Swapjutsu: a tab switcher over cards of rows. */
+/** Ayarlar: GPU, modeller, ComfyUI, asistan ve depolama. */
 export function Settings({ system, onChanged }: { system: SystemInfo | null; onChanged: () => void }) {
   const [tab, setTab] = useState<Tab>("general");
   return (
     <div className="flex h-full flex-col">
-      <PageHeader title="Settings" subtitle="Your GPU, the models and tools Kawarimi downloads only when you ask, ComfyUI, and what is kept on disk." />
+      <PageHeader title="Ayarlar" subtitle="GPU, yapay zekâ modelleri, araçlar, ComfyUI ve diskte saklanan dosyalar." />
       <div className="flex pb-6">
         <div className="flex rounded-full border border-stroke bg-well p-1">
           {TABS.map(([id, label]) => (
@@ -90,7 +90,6 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
   };
 
   const missing = assets.filter((a) => a.status === "missing");
-
   const problem = system?.gpuProblem;
   return (
     <>
@@ -103,10 +102,10 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
                 <div>
                   <div className="text-row font-semibold">{gpu.name}</div>
                   <div className="text-note text-muted">
-                    {Math.round(gpu.memoryMb / 1024)} GB · driver {gpu.driver}
+                    {Math.round(gpu.memoryMb / 1024)} GB · sürücü {gpu.driver}
                   </div>
                 </div>
-                <Pill tone={problem?.blocks ? "bad" : problem ? "warn" : "good"}>{problem?.blocks ? "Not usable" : "CUDA"}</Pill>
+                <Pill tone={problem?.blocks ? "bad" : problem ? "warn" : "good"}>{problem?.blocks ? "Kullanılamıyor" : "CUDA"}</Pill>
               </div>
             ))
           ) : null}
@@ -118,16 +117,16 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
             </div>
           )}
           {system?.renderModel && (
-            <div className="mt-3 text-note text-muted">Renders with {system.renderModel}</div>
+            <div className="mt-3 text-note text-muted">Video modeli: {system.renderModel}</div>
           )}
         </Card>
       </div>
 
       <div>
         <SectionLabel
-          trailing={missing.length ? `${formatBytes(missing.reduce((s, a) => s + a.size, 0))} to download` : "All installed"}
+          trailing={missing.length ? `${formatBytes(missing.reduce((s, a) => s + a.size, 0))} indirme gerekli` : "Tüm bileşenler kurulu"}
         >
-          Models and tools
+          Modeller ve Araçlar
         </SectionLabel>
         <Card className="divide-y divide-stroke">
           {assets.map((asset) => {
@@ -142,7 +141,7 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
                   <div className="mt-0.5 flex items-center gap-1 text-note text-muted">
                     {formatBytes(asset.size)} · {asset.license} ·
                     <button className="inline-flex items-center gap-1 hover:text-text" onClick={() => openUrl(asset.source)}>
-                      source <ExternalLink size={11} />
+                      kaynak <ExternalLink size={11} />
                     </button>
                   </div>
                   {p && (
@@ -157,14 +156,14 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
                 </div>
                 {asset.status === "installed" ? (
                   <div className="flex items-center gap-3">
-                    <Pill tone="good">Installed</Pill>
+                    <Pill tone="good">Kurulu</Pill>
                     <Button variant="link" onClick={() => run(asset.id, api.remove)}>
-                      Remove
+                      Kaldır
                     </Button>
                   </div>
                 ) : (
                   <Button disabled={!!p} onClick={() => run(asset.id, api.install)}>
-                    {p ? "Downloading…" : "Download"}
+                    {p ? "İndiriliyor…" : "İndir"}
                   </Button>
                 )}
               </div>
@@ -172,15 +171,15 @@ function General({ system, onChanged }: { system: SystemInfo | null; onChanged: 
           })}
         </Card>
         <p className="mt-2 px-1 text-note text-faint">
-          Every file is pinned to an exact revision and checked against its SHA-256 before it is used. Stored in{" "}
+          Her dosya sabitlenmiş sürümden indirilir ve kullanılmadan önce SHA-256 ile doğrulanır. Saklama konumu:{" "}
           {system?.assetsDir ?? "…"}.
         </p>
       </div>
 
       <div>
-        <SectionLabel>About</SectionLabel>
+        <SectionLabel>Hakkında</SectionLabel>
         <Card className="p-5 text-note text-muted">
-          Kawarimi {system?.appVersion} · {system?.os} · {system?.ffmpeg ?? "FFmpeg not installed"}
+          Merogi AI {system?.appVersion} · {system?.os} · {system?.ffmpeg ?? "FFmpeg kurulu değil"}
           <Acknowledgements />
         </Card>
       </div>
