@@ -13,7 +13,7 @@ const STEPS: { title: string; steps: JobStep[] }[] = [
   { title: "Tamamlama", steps: ["finishing"] },
 ];
 
-/** Jobs, as in Swapjutsu: only the work on its way and what stopped; finished renders are in Library. */
+/** Devam eden ve durdurulan işlemler. */
 export function Jobs({ system, onCreate }: { system: SystemInfo | null; onCreate: () => void }) {
   const { jobs, reload } = useJobs();
   const [holder, setHolder] = useState<GpuHolder | null>(null);
@@ -71,7 +71,7 @@ export function Jobs({ system, onCreate }: { system: SystemInfo | null; onCreate
               <SectionLabel trailing={String(items.length)}>{title}</SectionLabel>
               <div className="flex flex-col gap-3">
                 {items.map((job) => (
-                  <JobRow key={job.id} job={job} onKaldırd={reload} />
+                  <JobRow key={job.id} job={job} onRemoved={reload} />
                 ))}
               </div>
             </div>
@@ -82,7 +82,7 @@ export function Jobs({ system, onCreate }: { system: SystemInfo | null; onCreate
   );
 }
 
-function JobRow({ job, onKaldırd }: { job: Job; onKaldırd: () => void }) {
+function JobRow({ job, onRemoved }: { job: Job; onRemoved: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const active = !job.end;
@@ -95,7 +95,7 @@ function JobRow({ job, onKaldırd }: { job: Job; onKaldırd: () => void }) {
   const reached = STEPS.findIndex((s) => s.steps.includes(job.step));
   const quality = job.spec.settings.quality === "final" ? "Son çıktı" : "Taslak";
   const status =
-    job.end?.status === "failed" ? "Failed" : job.end?.status === "cancelled" ? "İptal etled" : job.detail ? "Running" : "Waiting";
+    job.end?.status === "failed" ? "Başarısız" : job.end?.status === "cancelled" ? "İptal edildi" : job.detail ? "Çalışıyor" : "Bekliyor";
   const detail =
     job.end?.status === "failed"
       ? job.end.reason
@@ -133,7 +133,7 @@ function JobRow({ job, onKaldırd }: { job: Job; onKaldırd: () => void }) {
                 </Button>
                 {confirming ? (
                   <>
-                    <Button variant="link" className="text-danger" onClick={() => run(() => jobsApi.remove(job.id), onKaldırd)}>
+                    <Button variant="link" className="text-danger" onClick={() => run(() => jobsApi.remove(job.id), onRemoved)}>
                       Geri Dönüşüm Kutusu'na taşı
                     </Button>
                     <Button variant="link" onClick={() => setConfirming(false)}>
@@ -141,7 +141,7 @@ function JobRow({ job, onKaldırd }: { job: Job; onKaldırd: () => void }) {
                     </Button>
                   </>
                 ) : (
-                  <Button aria-label="Kaldır" title="Move the job's folder to the Recycle Bin" onClick={() => setConfirming(true)}>
+                  <Button aria-label="Kaldır" title="İşlem klasörünü Geri Dönüşüm Kutusu'na taşı" onClick={() => setConfirming(true)}>
                     <Trash2 size={14} />
                   </Button>
                 )}
