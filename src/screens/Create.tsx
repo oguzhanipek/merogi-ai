@@ -13,8 +13,7 @@ import { fileUrl } from "./create/Step";
 const VIDEO_EXTENSIONS = ["mp4", "mov", "mkv", "webm", "avi", "m4v", "mpg", "mpeg", "wmv", "flv", "ogv", "ts", "mts", "3gp"];
 const isImage = (path: string) => IMAGE_EXTENSIONS.includes(path.split(".").pop()?.toLowerCase() ?? "");
 
-/** Create: the whole way from a video to a render on one page. Clips on the left, a new one first; on the right the
- *  new clip (video and trim) or a clip's steps: prep, characters, prompt, then a draft or the final. */
+/** Oluştur: video yüklemeden taslağa veya son çıktıya kadar tek ekranda. */
 export function Create({ onOpenLibrary }: { onOpenLibrary?: () => void }) {
   const [clips, setClips] = useState<ClipView[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
@@ -33,7 +32,6 @@ export function Create({ onOpenLibrary }: { onOpenLibrary?: () => void }) {
     const changed = clipApi.onClip((view) =>
       setClips((all) => (all.some((c) => c.id === view.id) ? all.map((c) => (c.id === view.id ? view : c)) : [view, ...all])),
     );
-    // A job's change shows in its clip's view, which lists the clip's jobs.
     const jobs = clipApi.onJob(() => refresh());
     return () => {
       changed.then((f) => f());
@@ -55,7 +53,7 @@ export function Create({ onOpenLibrary }: { onOpenLibrary?: () => void }) {
   };
 
   const choose = async () => {
-    const path = await open({ multiple: false, filters: [{ name: "Videos", extensions: VIDEO_EXTENSIONS }] });
+    const path = await open({ multiple: false, filters: [{ name: "Videolar", extensions: VIDEO_EXTENSIONS }] });
     if (typeof path === "string") read(path);
   };
 
@@ -74,7 +72,6 @@ export function Create({ onOpenLibrary }: { onOpenLibrary?: () => void }) {
     }
   };
 
-  // Files dropped anywhere: a video starts a new clip, an image goes to the first person without a character.
   useEffect(() => {
     const dropped = getCurrentWebview().onDragDropEvent((e) => {
       if (e.payload.type !== "drop") return;
@@ -96,15 +93,15 @@ export function Create({ onOpenLibrary }: { onOpenLibrary?: () => void }) {
   return (
     <div className="flex h-full flex-col">
       <PageHeader
-        title="Create"
-        subtitle="Prepare a clip on your GPU, check it, add your characters, then render a draft or the final."
+        title="Oluştur"
+        subtitle="Videonu GPU üzerinde hazırla, kişileri seç ve önce taslak ardından son videonu oluştur."
       />
       <div className="flex min-h-0 flex-1 gap-5">
         <Card className="flex w-[260px] shrink-0 flex-col overflow-y-auto p-2">
           <NewClipRow source={source} selected={selected === null} onClick={() => setSelected(null)} />
           {clips.length > 0 && (
             <div className="mt-4">
-              <SectionLabel trailing={String(clips.length)}>Clips</SectionLabel>
+              <SectionLabel trailing={String(clips.length)}>Videolar</SectionLabel>
               <div className="flex flex-col gap-1">
                 {clips.map((c) => (
                   <ClipRow key={c.id} clip={c} selected={c.id === selected} onClick={() => setSelected(c.id)} />
@@ -161,26 +158,26 @@ function NewClipRow({ source, selected, onClick }: { source: SourceInfo | null; 
         <Plus size={16} strokeWidth={2.5} />
       </span>
       <span className="min-w-0">
-        <span className="block text-body font-semibold">New clip</span>
+        <span className="block text-body font-semibold">Yeni video</span>
         <span className="block truncate text-meta text-faint">
-          {source ? source.path.split(/[\\/]/).pop() : "Drop a video, 4–30 s"}
+          {source ? source.path.split(/[\\/]/).pop() : "Video bırak veya seç · 4–30 sn"}
         </span>
       </span>
     </button>
   );
 }
 
-/** "Preparing · 45%", "Needs a character", "Rendering", "Draft ready"… */
+/** Hazırlanıyor, karakter bekliyor, oluşturuluyor, taslak hazır… */
 function status(clip: ClipView): string {
-  if (clip.running) return `${clip.running.stage} · ${Math.round(clip.running.fraction * 100)}%`;
-  if (!clip.manifest) return clip.error ? "Prep failed" : "Not prepared";
+  if (clip.running) return `${clip.running.stage} · %${Math.round(clip.running.fraction * 100)}`;
+  if (!clip.manifest) return clip.error ? "Hazırlık başarısız" : "Hazırlanmadı";
   const active = clip.jobs.find((j) => !j.end);
-  if (active) return active.step === "rendering" ? "Rendering" : "Render queued";
+  if (active) return active.step === "rendering" ? "Oluşturuluyor" : "Sırada";
   const missing = clip.targets.filter((p) => !clip.characters[String(p)]).length;
-  if (missing) return missing === 1 ? "Needs a character" : `Needs ${missing} characters`;
+  if (missing) return missing === 1 ? "Karakter bekleniyor" : `${missing} karakter bekleniyor`;
   const done = finished(clip);
-  if (done.length) return `${done.length} ${done.length === 1 ? "render" : "renders"}`;
-  return "Ready to render";
+  if (done.length) return `${done.length} çıktı`;
+  return "Oluşturmaya hazır";
 }
 
 function ClipRow({ clip, selected, onClick }: { clip: ClipView; selected: boolean; onClick: () => void }) {
