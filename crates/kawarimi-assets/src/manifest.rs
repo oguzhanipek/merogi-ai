@@ -193,24 +193,24 @@ pub const BIREFNET_LITE: Asset = Asset {
     )],
 };
 
-// note: BtbN deletes old autobuild releases after a while; when this URL goes away, move the pin to a newer
-// n9.0 build (same naming) or a mirror under our own releases.
+// FFmpeg-Builds publishes a fresh autobuild release. Keep this pinned to a concrete release asset and
+// its SHA-256 so the app download stays reproducible and verifiable.
 #[cfg(windows)]
 pub const FFMPEG: Asset = Asset {
     id: "ffmpeg",
     title: "FFmpeg 9.0 (LGPL)",
     group: Group::Tool,
     license: "LGPL-2.1-or-later",
-    source: "https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-18-13-01",
+    source: "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/tag/autobuild-2026-11-11-12-39",
     files: &[File {
-        url: "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-18-13-01/ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-9.0.zip",
+        url: "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/autobuild-2026-11-11-12-39/ffmpeg-n9.0.2-49-gc179411bbb-win64-lgpl-9.0.zip",
         path: "ffmpeg.zip",
-        size: 171_480_233,
-        sha256: "7f4cbda0ece7721488eeebf2fa69762d7388bca69450fd13045b408744457b14",
+        size: 168_580_960,
+        sha256: "9ccd65428fb0e60a0d574b76145df41f402b754edd2d06c2e24fa506fc1c2b02",
         unpack: &[
-            ("ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-9.0/bin/ffmpeg.exe", "ffmpeg.exe"),
-            ("ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-9.0/bin/ffprobe.exe", "ffprobe.exe"),
-            ("ffmpeg-n9.0.2-28-g669f5ab083-win64-lgpl-9.0/LICENSE.txt", "LICENSE.txt"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-win64-lgpl-9.0/bin/ffmpeg.exe", "ffmpeg.exe"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-win64-lgpl-9.0/bin/ffprobe.exe", "ffprobe.exe"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-win64-lgpl-9.0/LICENSE.txt", "LICENSE.txt"),
         ],
     }],
 };
@@ -221,16 +221,16 @@ pub const FFMPEG: Asset = Asset {
     title: "FFmpeg 9.0 (LGPL)",
     group: Group::Tool,
     license: "LGPL-2.1-or-later",
-    source: "https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-18-13-01",
+    source: "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/tag/autobuild-2026-11-11-12-39",
     files: &[File {
-        url: "https://github.com/BtbN/FFmpeg-Builds/releases/download/autobuild-2026-10-18-13-01/ffmpeg-n9.0.2-28-g669f5ab083-linux64-lgpl-9.0.tar.xz",
+        url: "https://github.com/FFmpeg-Builds/FFmpeg-Builds/releases/download/autobuild-2026-11-11-12-39/ffmpeg-n9.0.2-49-gc179411bbb-linux64-lgpl-9.0.tar.xz",
         path: "ffmpeg.tar.xz",
-        size: 137_946_364,
-        sha256: "b2ee4166aa1f068ac261cbdb637667f789c58f3556b463c41221ca8d971ac793",
+        size: 135_661_836,
+        sha256: "622b19ded1beff6acc2eb3f1ebe22a358fee932691791b481c883fae46508b94",
         unpack: &[
-            ("ffmpeg-n9.0.2-28-g669f5ab083-linux64-lgpl-9.0/bin/ffmpeg", "ffmpeg"),
-            ("ffmpeg-n9.0.2-28-g669f5ab083-linux64-lgpl-9.0/bin/ffprobe", "ffprobe"),
-            ("ffmpeg-n9.0.2-28-g669f5ab083-linux64-lgpl-9.0/LICENSE.txt", "LICENSE.txt"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-linux64-lgpl-9.0/bin/ffmpeg", "ffmpeg"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-linux64-lgpl-9.0/bin/ffprobe", "ffprobe"),
+            ("ffmpeg-n9.0.2-49-gc179411bbb-linux64-lgpl-9.0/LICENSE.txt", "LICENSE.txt"),
         ],
     }],
 };
