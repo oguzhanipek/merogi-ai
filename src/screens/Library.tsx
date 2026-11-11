@@ -20,7 +20,7 @@ function stamp(ms: number): string {
   return new Date(ms).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
 
-/** Every finished render, drafts and finals, newest first; a click opens it with its source and character. */
+/** Tamamlanan videolar en yeniden eskiye sıralanır. */
 export function Library({ onCreate }: { onCreate: () => void }) {
   const { jobs, reload } = useJobs();
   const [filter, setFilter] = useState<Filter>("all");
@@ -72,7 +72,7 @@ export function Library({ onCreate }: { onCreate: () => void }) {
           <EmptyState
             icon={<Film size={36} />}
             title={all.length ? "Burada henüz içerik yok" : "Henüz sonuç yok"}
-            note={all.length ? `No ${filter === "draft" ? "taslak" : "son çıktı"} yet.` : "Drafts and finals you render in Create show up here."}
+            note={all.length ? `Henüz ${filter === "draft" ? "taslak" : "son çıktı"} yok.` : "Oluştur bölümünde hazırladığın videolar burada görünür."}
             action={all.length ? { label: "Tümünü göster", onClick: () => setFilter("all") } : { label: "Oluştur bölümüne git", onClick: onCreate }}
           />
         </div>
