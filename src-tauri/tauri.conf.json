@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Kawarimi",
+  "productName": "Merogi AI",
   "version": "0.2.0",
-  "identifier": "dev.kawarimi.app",
+  "identifier": "com.merogi.ai",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:5420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Kawarimi",
+        "title": "Merogi AI",
         "width": 1360,
         "height": 880,
         "minWidth": 1080,
@@ -37,7 +37,7 @@
       "deb"
     ],
     "category": "Video",
-    "shortDescription": "Local AI character swap for video",
+    "shortDescription": "Local AI video character replacement studio",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
