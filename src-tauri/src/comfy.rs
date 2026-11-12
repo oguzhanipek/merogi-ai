@@ -129,8 +129,9 @@ impl Comfy {
         if inner.server.is_some() {
             return Ok(());
         }
-        // Without the render assets ComfyUI still starts, for checks; a render asks for them itself.
-        let extras = if Extras::missing(&self.store).is_empty() { Extras::render(&self.store) } else { Extras::default() };
+        // Load every installed render asset independently. Missing assets are reported by the render check,
+        // but must not hide custom nodes and models that are already installed.
+        let extras = Extras::render(&self.store);
         match Server::spawn(&install, &extras) {
             Ok(server) => {
                 inner.server = Some(server);
