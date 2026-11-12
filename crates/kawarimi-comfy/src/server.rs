@@ -42,17 +42,27 @@ impl Extras {
     /// (`AUX_ANNOTATOR_CKPTS_PATH`/<repo>/<file>).
     pub fn render(store: &Store) -> Self {
         let dir = |asset| store.dir(asset);
-        let mut folders = vec![
-            ("custom_nodes", dir(&manifest::NODES_CONTROLNET_AUX)),
-            ("custom_nodes", dir(&manifest::NODES_GGUF)),
-            ("text_encoders", dir(&manifest::UMT5_Q4)),
-            ("vae", dir(&manifest::WAN_VAE)),
-            ("clip_vision", dir(&manifest::CLIP_VISION_H)),
-            ("loras", dir(&manifest::LIGHTX2V)),
-        ];
+        let mut folders = Vec::new();
+        for (kind, asset) in [
+            ("custom_nodes", &manifest::NODES_CONTROLNET_AUX),
+            ("custom_nodes", &manifest::NODES_GGUF),
+            ("text_encoders", &manifest::UMT5_Q4),
+            ("vae", &manifest::WAN_VAE),
+            ("clip_vision", &manifest::CLIP_VISION_H),
+            ("loras", &manifest::LIGHTX2V),
+        ] {
+            if store.status(asset) == Status::Installed {
+                folders.push((kind, dir(asset)));
+            }
+        }
         let wan = VARIANTS.iter().filter(|v| store.status(v.asset) == Status::Installed);
         folders.extend(wan.map(|v| ("diffusion_models", dir(v.asset))));
-        Self { folders, env: vec![("AUX_ANNOTATOR_CKPTS_PATH", dir(&manifest::DWPOSE))], args: vec![] }
+        let env = if store.status(&manifest::DWPOSE) == Status::Installed {
+            vec![("AUX_ANNOTATOR_CKPTS_PATH", dir(&manifest::DWPOSE))]
+        } else {
+            Vec::new()
+        };
+        Self { folders, env, args: vec![] }
     }
 
     /// The render assets besides the Wan weights, which each render picks.
