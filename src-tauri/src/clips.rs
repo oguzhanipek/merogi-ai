@@ -393,21 +393,21 @@ impl Clips {
         Ok(kawarimi_comfy::prompt::Scene::read(&manifest, person as u64, &named)?.prompt())
     }
 
-    fn settings(&self, id: &str, person: usize, quality: Quality) -> Result<Settings> {
+    fn settings(&self, id: &str, person: usize, quality: Quality, model: &str) -> Result<Settings> {
         let clip = self.load(id)?;
         let prompt = match clip.characters.get(&person).and_then(|c| c.prompt.clone()) {
             Some(p) => p,
             None => self.template(id, person)?,
         };
         let seed = clip.created % 1_000_000;
-        Ok(Settings { quality, seed, prompt, model: None, frames: None, steps: None, short_side: None, window: None })
+        Ok(Settings { quality, seed, prompt, model: selected_model(model)?, frames: None, steps: None, short_side: None, window: None })
     }
 
     /// `held`: what the app's ComfyUI holds now; none when renders go to the person's own ComfyUI elsewhere.
-    fn estimate(&self, id: &str, quality: Quality, held: Option<u64>) -> Result<RenderEstimate> {
+    fn estimate(&self, id: &str, quality: Quality, model: &str, held: Option<u64>) -> Result<RenderEstimate> {
         let view = self.get(id)?;
         let prep = view.prep_dir.context("prep the clip first")?;
-        let settings = Settings { quality, seed: 0, prompt: String::new(), model: None, frames: None, steps: None, short_side: None, window: None };
+        let settings = Settings { quality, seed: 0, prompt: String::new(), model: selected_model(model)?, frames: None, steps: None, short_side: None, window: None };
         let estimate = settings.estimate(&RenderClip::read(&prep)?, vram())?;
         let ram = match (held, ram::Memory::read()) {
             (Some(held), Some(memory)) => Some(ram::fit(ram::need(settings.variant(vram())?), memory, held)),
@@ -417,7 +417,7 @@ impl Clips {
     }
 
     /// A render of `person` as their character: the prep as this render sees it, then a job.
-    fn render(&self, id: &str, person: usize, quality: Quality) -> Result<ClipView> {
+    fn render(&self, id: &str, person: usize, quality: Quality, model: &str) -> Result<ClipView> {
         let view = self.get(id)?;
         anyhow::ensure!(view.running.is_none(), "wait for the prep to finish");
         let prep = view.prep_dir.clone().context("prep the clip first")?;
@@ -453,7 +453,7 @@ impl Clips {
             let _ = std::fs::remove_dir_all(&folder);
             return Err(e);
         }
-        let spec = Spec { source: Source::Prepared { folder }, character: image, settings: self.settings(id, person, quality)? };
+        let spec = Spec { source: Source::Prepared { folder }, character: image, settings: self.settings(id, person, quality, model)? };
         let job = self.renders.create(spec)?;
         self.update(id, |clip| {
             clip.renders.push(RenderRef { job: job.id.clone(), person });
@@ -468,6 +468,16 @@ pub struct RenderEstimate {
     #[serde(flatten)]
     estimate: Estimate,
     ram: Option<ram::Fit>,
+}
+
+/// The UI's model choice: Q3 and Q4 are explicit; auto follows the GPU's VRAM.
+fn selected_model(choice: &str) -> Result<Option<String>> {
+    match choice {
+        "q3" => Ok(Some(manifest::WAN_ANIMATE_Q3.id.into())),
+        "q4" => Ok(Some(manifest::WAN_ANIMATE_Q4.id.into())),
+        "auto" => Ok(None),
+        other => bail!("unknown Wan model choice {other}"),
+    }
 }
 
 /// The first GPU's memory in bytes; 0 without one.
@@ -752,15 +762,15 @@ pub fn clip_template(clips: Shared<'_>, id: String, person: usize) -> Result<Str
 }
 
 #[tauri::command]
-pub fn clip_estimate(clips: Shared<'_>, state: State<'_, crate::AppState>, id: String, quality: Quality) -> Result<RenderEstimate, String> {
+pub fn clip_estimate(clips: Shared<'_>, state: State<'_, crate::AppState>, id: String, quality: Quality, model: String) -> Result<RenderEstimate, String> {
     let held = state.own_comfy.server().is_none().then(|| state.comfy.guard().map_or(0, |g| g.held()));
-    text(clips.estimate(&id, quality, held))
+    text(clips.estimate(&id, quality, &model, held))
 }
 
 #[tauri::command]
-pub async fn clip_render(clips: Shared<'_>, id: String, person: usize, quality: Quality) -> Result<ClipView, String> {
+pub async fn clip_render(clips: Shared<'_>, id: String, person: usize, quality: Quality, model: String) -> Result<ClipView, String> {
     let clips = clips.inner().clone();
-    blocking(move || clips.render(&id, person, quality)).await
+    blocking(move || clips.render(&id, person, quality, &model)).await
 }
 
 #[tauri::command]
