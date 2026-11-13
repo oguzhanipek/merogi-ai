@@ -173,7 +173,7 @@ export function RenderStatus({ clip, onOpenLibrary }: { clip: ClipView; onOpenLi
 }
 
 /** Always in sight under the steps: what step 5 picked and Generate. */
-export function RenderBar({ clip, person, quality }: { clip: ClipView; person: number | null; quality: Quality }) {
+export function RenderBar({ clip, person, quality, model }: { clip: ClipView; person: number | null; quality: Quality; model: RenderModel }) {
   const [failure, setFailure] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const why = blocker(clip, person);
