@@ -476,7 +476,7 @@ fn selected_model(choice: &str, held: u64) -> Result<Option<String>> {
     let selected = match choice {
         "q3" => return Ok(Some(manifest::WAN_ANIMATE_Q3.id.into())),
         "q4" => return Ok(Some(manifest::WAN_ANIMATE_Q4.id.into())),
-        "auto" => kawarimi_comfy::variant::Variant::for_vram(Some(vram() >> 20)),
+        "auto" => kawarimi_comfy::Variant::for_vram(Some(vram() >> 20)),
         other => bail!("unknown Wan model choice {other}"),
     };
     if selected.asset.id == manifest::WAN_ANIMATE_Q4.id
