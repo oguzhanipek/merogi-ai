@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FolderOpen, Trash } from "lucide-react";
 import { openPath } from "@tauri-apps/plugin-opener";
-import { clipApi, timecode, type ClipView, type Quality } from "../../lib/api";
+import { clipApi, timecode, type ClipView, type Quality, type RenderModel } from "../../lib/api";
 import { CharactersStep } from "./Characters";
 import { Player, finished, type Version } from "./Player";
 import { PrepStep } from "./Prep";
@@ -30,6 +30,7 @@ export function ClipWorkspace({
 }) {
   const [version, setVersion] = useState<Version>(clip.prep ? "review" : "original");
   const [quality, setQuality] = useState<Quality>("draft");
+  const [model, setModel] = useState<RenderModel>("q3");
   const [chosen, setChosen] = useState<number | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
   const people = renderable(clip);
@@ -111,12 +112,12 @@ export function ClipWorkspace({
               <PromptStep clip={clip} person={person} />
             </Step>
             <Step number={5} title="Render" state={person === null || !manifest ? "later" : "now"}>
-              <RenderStep clip={clip} person={person} quality={quality} onPerson={setChosen} onQuality={setQuality} />
+              <RenderStep clip={clip} person={person} quality={quality} model={model} onPerson={setChosen} onQuality={setQuality} onModel={setModel} />
             </Step>
           </div>
         }
       />
-      <RenderBar clip={clip} person={person} quality={quality} />
+      <RenderBar clip={clip} person={person} quality={quality} model={model} />
     </div>
   );
 }
