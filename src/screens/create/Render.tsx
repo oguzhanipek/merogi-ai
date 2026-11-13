@@ -102,6 +102,14 @@ export function RenderStep({
           <span className="tabular-nums">about {minutes(estimate.seconds)}</span>
           <span className="text-faint">Video memory</span>
           <span className="tabular-nums">about {estimate.vramGb.toFixed(1)} GB</span>
+          {estimate.ram && (
+            <>
+              <span className="text-faint">System RAM</span>
+              <span className="tabular-nums">
+                about {(estimate.ram.need / 1024 ** 3).toFixed(1)} GB {estimate.ram.measured ? "(measured)" : "(estimate)"}
+              </span>
+            </>
+          )}
           <span className="text-faint">Model</span>
           <span>{estimate.model}</span>
         </div>
