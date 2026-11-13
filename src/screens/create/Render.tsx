@@ -73,7 +73,7 @@ export function RenderStep({
           ]}
           onChange={onModel}
         />
-        <Note>Q3 varsayılan seçenektir. Otomatik, ekran kartının belleğine göre model seçer.</Note>
+        <Note>Q3 varsayılandır. Otomatik, önce ekran kartına bakar; Q4 için yeterli boş RAM yoksa Q3'e geçer.</Note>
       </div>
       <Segmented
         value={quality}
