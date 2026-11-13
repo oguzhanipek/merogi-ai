@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { CircleStop, Film, Sparkles } from "lucide-react";
-import { clipApi, type ClipView, type Estimate, type Quality, type RenderJob, type RenderProgress } from "../../lib/api";
+import { clipApi, type ClipView, type Estimate, type Quality, type RenderModel, type RenderJob, type RenderProgress } from "../../lib/api";
 import { Button, Progress } from "../../components/ui";
 import { Note, Segmented } from "./Step";
 
@@ -36,20 +36,24 @@ export function RenderStep({
   clip,
   person,
   quality,
+  model,
   onPerson,
   onQuality,
+  onModel,
 }: {
   clip: ClipView;
   person: number | null;
   quality: Quality;
+  model: RenderModel;
   onPerson: (p: number) => void;
   onQuality: (q: Quality) => void;
+  onModel: (m: RenderModel) => void;
 }) {
   const [estimate, setEstimate] = useState<Estimate | null>(null);
   useEffect(() => {
     if (!clip.manifest) return;
-    clipApi.estimate(clip.id, quality).then(setEstimate, () => setEstimate(null));
-  }, [clip.id, clip.prep, quality]);
+    clipApi.estimate(clip.id, quality, model).then(setEstimate, () => setEstimate(null));
+  }, [clip.id, clip.prep, quality, model]);
   const people = renderable(clip);
   const why = blocker(clip, person);
 
@@ -58,6 +62,19 @@ export function RenderStep({
       {people.length > 1 && (
         <Segmented value={person ?? people[0]} options={people.map((p) => ({ value: p, label: `Person ${p}` }))} onChange={onPerson} />
       )}
+      <div className="flex flex-col gap-2">
+        <span className="text-meta font-semibold uppercase tracking-[0.12em] text-faint">Wan 2.2 modeli</span>
+        <Segmented
+          value={model}
+          options={[
+            { value: "q3", label: "Q3_K_M" },
+            { value: "q4", label: "Q4_K_M" },
+            { value: "auto", label: "Otomatik" },
+          ]}
+          onChange={onModel}
+        />
+        <Note>Q3 varsayılan seçenektir. Otomatik, ekran kartının belleğine göre model seçer.</Note>
+      </div>
       <Segmented
         value={quality}
         options={[
@@ -165,7 +182,7 @@ export function RenderBar({ clip, person, quality }: { clip: ClipView; person: n
     setSending(true);
     setFailure(null);
     try {
-      await clipApi.render(clip.id, person, quality);
+      await clipApi.render(clip.id, person, quality, model);
     } catch (e) {
       setFailure(String(e));
     } finally {
@@ -175,7 +192,7 @@ export function RenderBar({ clip, person, quality }: { clip: ClipView; person: n
   return (
     <footer className="flex items-center gap-3 border-t border-stroke pt-4">
       <span className={`text-note ${failure ? "text-danger" : "text-muted"}`}>
-        {failure ?? why ?? `${quality === "draft" ? "Draft" : "Final"} of Person ${person} · Wan 2.2 Animate on this GPU · free`}
+        {failure ?? why ?? `${quality === "draft" ? "Draft" : "Final"} of Person ${person} · ${model === "q3" ? "Q3_K_M" : model === "q4" ? "Q4_K_M" : "Otomatik"} · free`}
       </span>
       <Button variant="primary" className="ml-auto shrink-0" disabled={!!why || sending} onClick={go}>
         <span className="flex items-center gap-2">
