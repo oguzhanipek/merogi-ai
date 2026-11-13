@@ -393,7 +393,7 @@ impl Clips {
         Ok(kawarimi_comfy::prompt::Scene::read(&manifest, person as u64, &named)?.prompt())
     }
 
-    fn settings(&self, id: &str, person: usize, quality: Quality, model: &str, held: u64) -> Result<Settings> {
+    fn settings(&self, id: &str, person: usize, quality: Quality, model: &str, held: Option<u64>) -> Result<Settings> {
         let clip = self.load(id)?;
         let prompt = match clip.characters.get(&person).and_then(|c| c.prompt.clone()) {
             Some(p) => p,
@@ -407,7 +407,7 @@ impl Clips {
     fn estimate(&self, id: &str, quality: Quality, model: &str, held: Option<u64>) -> Result<RenderEstimate> {
         let view = self.get(id)?;
         let prep = view.prep_dir.context("prep the clip first")?;
-        let settings = Settings { quality, seed: 0, prompt: String::new(), model: selected_model(model, held.unwrap_or(0))?, frames: None, steps: None, short_side: None, window: None };
+        let settings = Settings { quality, seed: 0, prompt: String::new(), model: selected_model(model, held)?, frames: None, steps: None, short_side: None, window: None };
         let estimate = settings.estimate(&RenderClip::read(&prep)?, vram())?;
         let ram = match (held, ram::Memory::read()) {
             (Some(held), Some(memory)) => Some(ram::fit(ram::need(settings.variant(vram())?), memory, held)),
@@ -417,7 +417,7 @@ impl Clips {
     }
 
     /// A render of `person` as their character: the prep as this render sees it, then a job.
-    fn render(&self, id: &str, person: usize, quality: Quality, model: &str, held: u64) -> Result<ClipView> {
+    fn render(&self, id: &str, person: usize, quality: Quality, model: &str, held: Option<u64>) -> Result<ClipView> {
         let view = self.get(id)?;
         anyhow::ensure!(view.running.is_none(), "wait for the prep to finish");
         let prep = view.prep_dir.clone().context("prep the clip first")?;
@@ -472,7 +472,7 @@ pub struct RenderEstimate {
 
 /// Q3 and Q4 are explicit. Auto starts with the VRAM choice, then falls back to Q3
 /// when the selected Q4 model would need paging with the machine's current free RAM.
-fn selected_model(choice: &str, held: u64) -> Result<Option<String>> {
+fn selected_model(choice: &str, held: Option<u64>) -> Result<Option<String>> {
     let selected = match choice {
         "q3" => return Ok(Some(manifest::WAN_ANIMATE_Q3.id.into())),
         "q4" => return Ok(Some(manifest::WAN_ANIMATE_Q4.id.into())),
@@ -480,6 +480,7 @@ fn selected_model(choice: &str, held: u64) -> Result<Option<String>> {
         other => bail!("unknown Wan model choice {other}"),
     };
     if selected.asset.id == manifest::WAN_ANIMATE_Q4.id
+        && let Some(held) = held
         && let Some(memory) = ram::Memory::read()
         && ram::fit(ram::need(selected), memory, held).verdict != ram::Verdict::Fits
     {
@@ -777,7 +778,7 @@ pub fn clip_estimate(clips: Shared<'_>, state: State<'_, crate::AppState>, id: S
 
 #[tauri::command]
 pub async fn clip_render(clips: Shared<'_>, state: State<'_, crate::AppState>, id: String, person: usize, quality: Quality, model: String) -> Result<ClipView, String> {
-    let held = state.own_comfy.server().is_none().then(|| state.comfy.guard().map_or(0, |g| g.held())).unwrap_or(0);
+    let held = state.own_comfy.server().is_none().then(|| state.comfy.guard().map_or(0, |g| g.held()));
     let clips = clips.inner().clone();
     blocking(move || clips.render(&id, person, quality, &model, held)).await
 }
