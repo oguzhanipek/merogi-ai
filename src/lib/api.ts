@@ -190,6 +190,8 @@ export function jobName(job: Job): string {
 
 export type Quality = "draft" | "final";
 
+export type RenderModel = "q3" | "q4" | "auto";
+
 export type Box = { x0: number; y0: number; x1: number; y1: number };
 
 export type Identity = {
@@ -278,8 +280,8 @@ export const clipApi = {
   changeCharacter: (id: string, person: number, change: CharacterChange) =>
     invoke<ClipView>("clip_change_character", { id, person, change }),
   template: (id: string, person: number) => invoke<string>("clip_template", { id, person }),
-  estimate: (id: string, quality: Quality) => invoke<Estimate>("clip_estimate", { id, quality }),
-  render: (id: string, person: number, quality: Quality) => invoke<ClipView>("clip_render", { id, person, quality }),
+  estimate: (id: string, quality: Quality, model: RenderModel) => invoke<Estimate>("clip_estimate", { id, quality, model }),
+  render: (id: string, person: number, quality: Quality, model: RenderModel) => invoke<ClipView>("clip_render", { id, person, quality, model }),
   cancelRender: (id: string) => invoke<void>("job_cancel", { id }),
   renderProgress: (job: string) => invoke<RenderProgress | null>("render_progress", { job }),
   onClip: (handler: (c: ClipView) => void): Promise<UnlistenFn> =>
